@@ -32,6 +32,10 @@ jobs:
           workflow: build-macos.yml
           name: macOS-app
           path: download/macos
+      
+      - name: Reassemble macOS .app bundle
+        run: |
+          mv download/macos download/macos.app
 
       - name: Generate links.html
         run: |

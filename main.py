@@ -1,8 +1,7 @@
 import gui
 import pandas as pd
 import email_generator
-from io import StringIO
-import utils
+
 
 
 def generate_emails(data: pd.DataFrame, output_folder, template_path):

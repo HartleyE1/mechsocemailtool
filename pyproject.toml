@@ -3,9 +3,8 @@ name = "mechsoc-email-tool"
 version = "0.1.0"
 description = "A tool for automating MechSoc emails"
 dependencies = [
-    "tkinter",
     "pandas",
-    "io",
     "pyperclip",
-    "csv",
+    "pandastable",
+
 ]

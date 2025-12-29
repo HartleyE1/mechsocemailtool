@@ -25,14 +25,14 @@ jobs:
         with:
           workflow: build-windows.yml
           name: windows-app
-          path: dist/main.exe
+          path: dist/windows
 
       - name: Download macOS artifact from macOS workflow
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build-macos.yml
           name: macOS-app
-          path: dist/main.app
+          path: dist/macOS
 
       - name: Update links.html
         run: |

@@ -22,7 +22,7 @@ jobs:
         with:
           workflow: build-macos.yml
           name: macOS-app
-          path: dist/main.app
+          path: dist/mechsoc_email_tool_macos.zip
 
       - uses: actions/setup-python@v5
         with:

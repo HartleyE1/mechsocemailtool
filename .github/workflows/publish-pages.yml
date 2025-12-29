@@ -36,6 +36,7 @@ jobs:
       - name: Generate links.html
         run: |
           mkdir -p download
+          rm -f download/links.html
           echo "<h2>Latest Downloads</h2>" > download/links.html
           echo "<ul>" >> download/links.html
           echo "<li><a href='/mechsocemailtool/download/windows/MechSoc Email Tool.exe'>Windows (.exe)</a></li>" >> download/links.html

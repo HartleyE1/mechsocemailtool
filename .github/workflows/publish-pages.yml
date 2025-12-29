@@ -7,6 +7,7 @@ permissions:
   actions: read
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Build Windows App"]
     types: [completed]
@@ -17,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Create download directory
+        run: mkdir -p download
+
       - name: Checkout repository
         uses: actions/checkout@v4
 

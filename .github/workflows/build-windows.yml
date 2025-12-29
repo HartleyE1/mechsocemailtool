@@ -41,7 +41,7 @@ jobs:
             --add-data "assets/mechsoc_32.ico;assets" `
             --add-data "assets/mechsoc_128.png;assets" `
             --add-data "assets/mechsoc_256.png;assets" `
-            --name "MechSoc Email Tool"
+            --name "MechSoc Email Tool" `
             main.py
 
       - name: Upload Windows artifact

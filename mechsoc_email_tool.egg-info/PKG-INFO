@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: mechsoc-email-tool
-Version: 0.1.0
-Summary: A tool for automating MechSoc emails
-Requires-Dist: pandas
-Requires-Dist: pyperclip
-Requires-Dist: pandastable

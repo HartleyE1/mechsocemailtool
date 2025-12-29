@@ -1,16 +1,14 @@
 name: Publish Latest Builds to GitHub Pages
 
-on:
-  workflow_run:
-    workflows: ["Build Windows App", "Build macOS App"]
-    types:
-      - completed
-
 permissions:
   contents: write
   pages: write
   id-token: write
-  actions: read
+
+on:
+  workflow_run:
+    workflows: ["Build Windows App"]
+    types: [completed]
 
 jobs:
   publish:
@@ -21,30 +19,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Download Windows artifact
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
           name: windows-app
           path: download/windows
 
-      # Download macOS artifact
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
           name: macOS-app
           path: download/macos
 
-      # Rewrite download/links.html with fresh links
       - name: Update links.html
         run: |
           echo "<h2>Latest Downloads</h2>" > download/links.html
           echo "<ul>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/windows/main.exe'>Windows Download</a></li>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/macos/main.app'>macOS Download</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/windows/main.exe'>Windows (.exe)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macos/main.app'>macOS (.app)</a></li>" >> download/links.html
           echo "</ul>" >> download/links.html
 
-      # Upload site content as artifact for Pages
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

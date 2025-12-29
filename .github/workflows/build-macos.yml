@@ -1,5 +1,9 @@
 name: Build macOS App
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_dispatch:
   push:
@@ -24,10 +28,14 @@ jobs:
 
       - name: Build app
         run: |
-            python -m PyInstaller --onefile --windowed --icon="assets/mechsoc_32.ico" --add-data "assets/mechsoc_32.ico:assets" --add-data "assets/mechsoc_128.png:assets" --add-data "assets/mechsoc_256.png:assets" main.py
+          python -m PyInstaller --onefile --windowed \
+            --icon="assets/mechsoc_32.ico" \
+            --add-data "assets/mechsoc_32.ico:assets" \
+            --add-data "assets/mechsoc_128.png:assets" \
+            --add-data "assets/mechsoc_256.png:assets" \
+            main.py
 
-
-      - name: Upload artifact
+      - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: macOS-app

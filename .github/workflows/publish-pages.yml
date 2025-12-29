@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create download directory
-        run: mkdir -p download
-
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Create download directory
+        run: mkdir -p download
 
       - name: Download windows artifact from windows workflow
         uses: dawidd6/action-download-artifact@v3

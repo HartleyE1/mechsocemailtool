@@ -16,6 +16,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: pages
+          persist-credentials: false
+
 
       - name: Download windows artifact
         uses: dawidd6/action-download-artifact@v3

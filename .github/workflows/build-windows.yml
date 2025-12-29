@@ -20,7 +20,7 @@ jobs:
       - name: Download macOS artifact from macOS workflow
         uses: dawidd6/action-download-artifact@v3
         with:
-          workflow: Build macOS App
+          workflow: build-macos.yml
           name: macOS-app
           path: dist/macos
 

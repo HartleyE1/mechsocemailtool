@@ -20,17 +20,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+      - name: Download windows artifact from windows workflow
+        uses: dawidd6/action-download-artifact@v3
         with:
+          workflow: build-windows.yml
           name: windows-app
-          path: download/windows
+          path: dist/main.exe
 
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+      - name: Download macOS artifact from macOS workflow
+        uses: dawidd6/action-download-artifact@v3
         with:
+          workflow: build-macos.yml
           name: macOS-app
-          path: download/macos
+          path: dist/main.app
 
       - name: Update links.html
         run: |

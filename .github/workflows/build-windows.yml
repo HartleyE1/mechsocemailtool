@@ -22,7 +22,7 @@ jobs:
         with:
           workflow: build-macos.yml
           name: macOS-app
-          path: dist/macos
+          path: dist/main.app
 
       - uses: actions/setup-python@v5
         with:

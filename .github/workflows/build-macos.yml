@@ -35,8 +35,18 @@ jobs:
             --add-data "assets/mechsoc_256.png:assets" \
             main.py
 
+      - name: Rename .app bundle
+        run: |
+          mv dist/main.app "dist/MechSoc Email Tool.app"
+
+      - name: Zip .app bundle
+        run: |
+          cd dist
+          zip -r mechsoc_email_tool_macos.zip "MechSoc Email Tool.app"
+
+
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: macOS-app
-          path: dist/main.app
+          path: dist/main.app.zip

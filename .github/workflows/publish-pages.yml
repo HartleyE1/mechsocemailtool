@@ -35,15 +35,15 @@ jobs:
       
       - name: Reassemble macOS .app bundle
         run: |
-          mv download/macos download/macos.app
+          mv download/macos download/macos/main.app
 
       - name: Generate links.html
         run: |
           mkdir -p download
           echo "<h2>Latest Downloads</h2>" > download/links.html
           echo "<ul>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/windows/main.exe'>Windows (.exe)</a></li>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/macos/main.app'>macOS (.app)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/windows/MechSoc Email Tool.exe'>Windows (.exe)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macos/mechsoc_email_tool_macos.zip'>macOS (.zip)</a></li>" >> download/links.html
           echo "</ul>" >> download/links.html
 
 

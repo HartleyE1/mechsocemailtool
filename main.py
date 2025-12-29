@@ -18,6 +18,7 @@ def __main__():
     # Start the GUI
     gui.start_gui(generate_emails)
 
+# Run the main function
 
 if __name__ == "__main__":
     __main__()

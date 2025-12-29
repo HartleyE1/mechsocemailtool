@@ -43,7 +43,7 @@ jobs:
           echo "<h2>Latest Downloads</h2>" > download/links.html
           echo "<ul>" >> download/links.html
           echo "<li><a href='/mechsocemailtool/download/windows/main.exe'>Windows (.exe)</a></li>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/macos/main.app'>macOS (.app)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macOS/main.app'>macOS (.app)</a></li>" >> download/links.html
           echo "</ul>" >> download/links.html
 
       - name: Upload GitHub Pages artifact

@@ -1,10 +1,11 @@
 import tkinter
-from tkinter import messagebox
-from tkinter import filedialog
+from tkinter import messagebox, filedialog, ttk
 from utils import paste_spreadsheet_data_to_csv
 from pandastable import Table, TableModel
 import pandas as pd
 import io
+import updater
+import json
 
 import os, sys
 
@@ -38,10 +39,22 @@ def start_gui(gen):
     output_var = tkinter.StringVar()
     template_var = tkinter.StringVar()
 
+    #############version check button
+    if updater.is_outdated():
+        version_button = ttk.Button(root, text="Version Info •", command=open_version_window)
+    else:
+        version_button = ttk.Button(root, text="Version Info", command=open_version_window)
+    version_button.place(relx=1.0, x=-10, y=10, anchor="ne")
+
+
+
+
 
 
     label = tkinter.Label(root, text="MechSoc Email Tool", font=("Arial", 16))
     label.pack(pady=20)
+
+
 
     frame1 = tkinter.Frame(root)
     frame1.pack(pady=10)    
@@ -117,6 +130,32 @@ def start_gui(gen):
 
 
     root.mainloop()
+
+def open_version_window():
+    with open("version_info.json", "r") as f:
+        info = json.load(f)
+
+    win = tkinter.Toplevel()
+    win.title("Version Information")
+    win.geometry("300x200")
+    win.resizable(False, False)
+
+    # Version label
+    ttk.Label(win, text=f"Version: {info['version']}", font=("Segoe UI", 12)).pack(pady=5)
+    ttk.Label(win, text=f"Date: {info['date']}", font=("Segoe UI", 10)).pack(pady=5)
+    ttk.Label(win, text=f"Type: {info['type']}", font=("Segoe UI", 10)).pack(pady=5)
+
+    # Spacer
+    ttk.Label(win, text="").pack(pady=5)
+
+    # Update button
+    def do_update():
+        updater.Update()
+        ttk.Label(win, text="Update complete. Restart the app.", foreground="green").pack()
+
+    ttk.Button(win, text="Update", command=do_update).pack(pady=10)
+
+
 
 def update_table(table: Table, csv_string: str):
     print("Updating table...")

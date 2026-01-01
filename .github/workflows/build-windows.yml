@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Windows app
         run: |
-         python -m PyInstaller --onefile --windowed --icon="assets/mechsoc_32.ico" --add-data "assets/mechsoc_32.ico;assets" --add-data "assets/mechsoc_128.png;assets" --add-data "assets/mechsoc_256.png;assets" --add-data "assets/version_info.json;." --name "MechSoc Email Tool" main.py
+         python -m PyInstaller --onefile --windowed --icon="assets/mechsoc_32.ico" --add-data "assets/mechsoc_32.ico;assets" --add-data "assets/mechsoc_128.png;assets" --add-data "assets/mechsoc_256.png;assets" --add-data "version_info.json;." --name "MechSoc Email Tool" main.py
 
 
       - name: Upload Windows artifact

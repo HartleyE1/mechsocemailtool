@@ -43,7 +43,7 @@ def get_download_url():
     system = platform.system()
 
     if system == "Windows":
-        return f"{PAGES_BASE}/windows/main.exe"
+        return f"{PAGES_BASE}/windows/MechSoc Email Tool.exe"
     elif system == "Darwin":
         return f"{PAGES_BASE}/macos/mechsoc_email_tool_macos.zip"
     else:

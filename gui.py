@@ -132,7 +132,7 @@ def start_gui(gen):
     root.mainloop()
 
 def open_version_window():
-    with open("version_info.json", "r") as f:
+    with open(resource_path("version_info.json"), "r") as f:
         info = json.load(f)
 
     win = tkinter.Toplevel()

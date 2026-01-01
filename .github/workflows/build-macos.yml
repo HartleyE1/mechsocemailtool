@@ -33,6 +33,7 @@ jobs:
             --add-data "assets/mechsoc_32.ico:assets" \
             --add-data "assets/mechsoc_128.png:assets" \
             --add-data "assets/mechsoc_256.png:assets" \
+            --add-data "assets/version_info.json:." \
             main.py
 
       - name: Rename .app bundle

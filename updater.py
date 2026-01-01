@@ -15,9 +15,14 @@ REMOTE_VERSION_URL = f"{PAGES_BASE}/version_info.json"
 # Local version file bundled with the app
 LOCAL_VERSION_FILE = "version_info.json"
 
+def resource_path(relative_path):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
 
 def get_local_version():
-    with open(LOCAL_VERSION_FILE, "r") as f:
+    with open(resource_path(LOCAL_VERSION_FILE), "r") as f:
         return json.load(f)["version"]
 
 

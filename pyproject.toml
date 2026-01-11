@@ -7,4 +7,5 @@ dependencies = [
     "pyperclip",
     "pandastable",
     "requests",
+    "pywebview",
 ]

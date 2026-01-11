@@ -6,6 +6,8 @@ import pandas as pd
 import io
 import updater
 import json
+import email_builder
+from temp_email import TEMP_EML_PATH
 
 import os, sys
 
@@ -84,6 +86,7 @@ def start_gui(gen):
     output_path_dialog_button.pack( side=tkinter.RIGHT, padx=10)
     output_frame.pack(pady=10, fill="x")
     
+    """
     template_path_label = tkinter.Label(frame1, text="Template Path:")
     template_frame = tkinter.Frame(frame1)
     template_entry = tkinter.Entry(template_frame, width=50, textvariable=template_var)
@@ -92,10 +95,15 @@ def start_gui(gen):
     template_entry.pack( side=tkinter.LEFT, fill="x", expand=True)
     open_template_button.pack(side=tkinter.RIGHT, padx=10)
     template_frame.pack(pady=10, fill="x")
+    """
+
+    template_frame = tkinter.Frame(frame1)
+    template_button = tkinter.Button(template_frame, text="Open Template Editor", command=lambda: email_builder.open_editor())
+    template_button.pack()
+    template_frame.pack(pady=10, fill="x")
 
 
-
-    generate_emails_button = tkinter.Button(frame1, text="Generate Emails", command=lambda: gen(pass_selected_rows_only(preview_table, check1_var.get()), output_var.get(), template_var.get()))
+    generate_emails_button = tkinter.Button(frame1, text="Generate Emails", command=lambda: gen(pass_selected_rows_only(preview_table, check1_var.get()), output_var.get(), TEMP_EML_PATH))
     generate_emails_button.pack(pady=0)
 
 

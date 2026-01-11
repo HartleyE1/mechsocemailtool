@@ -1,3 +1,4 @@
+LICENSE
 pyproject.toml
 mechsoc_email_tool.egg-info/PKG-INFO
 mechsoc_email_tool.egg-info/SOURCES.txt

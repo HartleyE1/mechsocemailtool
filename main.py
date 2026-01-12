@@ -6,9 +6,16 @@ import os
 import atexit
 from temp_email import TEMP_EML_PATH
 
+os.environ["TEMP_EML_PATH"] = TEMP_EML_PATH
 
 
 def generate_emails(data: pd.DataFrame, output_folder, template_path):
+
+    if (len(data) > 20):
+        if not gui.large_dataset_warning():
+            print("Not generating, user exited.")
+            return
+
     # Convert CSV string to list of dictionaries
     data = data.to_dict(orient='records')
 

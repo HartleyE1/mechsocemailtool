@@ -11,7 +11,6 @@ from email import policy
 from email.parser import BytesParser
 import email.utils
 
-
 def load_template_from_path(template_path):
     with open(template_path, 'rb') as f:
         msg = BytesParser(policy=policy.default).parse(f)
@@ -109,9 +108,13 @@ class API:
 
         update_temp_email(html, text, subject)
 
-        window = webview.windows[0]
+        window = webview.active_window()
+        if not window:
+            print("No active window :(")
+            return
+        
         result = window.create_file_dialog(
-            webview.SAVE_DIALOG,
+            webview.FileDialog.SAVE,
             allow_multiple=False,
             file_types=('Email files (*.eml)', 'All files (*.*)')
         )

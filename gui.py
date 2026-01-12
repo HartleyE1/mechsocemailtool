@@ -8,8 +8,11 @@ import updater
 import json
 import email_builder
 from temp_email import TEMP_EML_PATH
+import multiprocessing
 
 import os, sys
+
+
 
 def resource_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
@@ -98,7 +101,7 @@ def start_gui(gen):
     """
 
     template_frame = tkinter.Frame(frame1)
-    template_button = tkinter.Button(template_frame, text="Open Template Editor", command=lambda: email_builder.open_editor())
+    template_button = tkinter.Button(template_frame, text="Open Template Editor", command=boot_editor)
     template_button.pack()
     template_frame.pack(pady=10, fill="x")
 
@@ -211,3 +214,10 @@ def pass_selected_rows_only(table: Table, toggle: bool) -> pd.DataFrame:
 
     # Fallback: return whole df
     return df.copy()
+
+def boot_editor():
+    os.environ["TEMP_EML_PATH"] = TEMP_EML_PATH
+    multiprocessing.Process(target=email_builder.open_editor).start()
+
+def large_dataset_warning():
+    return messagebox.askyesno("Warning","You are attempting to generate a large number of emails, this might take a little longer than usual. Would you like to proceed?")

@@ -5,6 +5,7 @@ import tempfile
 import os
 import atexit
 from temp_email import TEMP_EML_PATH
+import multiprocessing
 
 os.environ["TEMP_EML_PATH"] = TEMP_EML_PATH
 
@@ -24,7 +25,7 @@ def generate_emails(data: pd.DataFrame, output_folder, template_path):
 
     gui.finish_message()
 
-def __main__():
+def main():
     # Start the GUI
     gui.start_gui(generate_emails)
 # Run the main function
@@ -37,4 +38,6 @@ def cleanup_temp_files():
         pass
 
 if __name__ == "__main__":
-    __main__()
+    multiprocessing.freeze_support()
+    main()
+

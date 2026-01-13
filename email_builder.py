@@ -223,5 +223,9 @@ html = """
 
 ###--End of Webview HTML Content--###
 
+def launch_editor_process():
+    from email_builder import open_editor
+    open_editor()
+
 if __name__ == "__main__":
     open_editor()

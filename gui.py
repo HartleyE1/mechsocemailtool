@@ -217,7 +217,7 @@ def pass_selected_rows_only(table: Table, toggle: bool) -> pd.DataFrame:
 
 def boot_editor():
     os.environ["TEMP_EML_PATH"] = TEMP_EML_PATH
-    multiprocessing.Process(target=email_builder.open_editor).start()
+    multiprocessing.Process(target=email_builder.launch_editor_process).start()
 
 def large_dataset_warning():
     return messagebox.askyesno("Warning","You are attempting to generate a large number of emails, this might take a little longer than usual. Would you like to proceed?")

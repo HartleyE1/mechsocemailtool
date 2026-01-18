@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import platform
 import requests
+import subprocess
 
 # Your GitHub Pages base URL
 PAGES_BASE = "https://hartleye1.github.io/mechsocemailtool/download"
@@ -67,7 +68,9 @@ def download_update():
     return temp_path
 
 
-def replace_app(downloaded_path):
+
+
+"""def replace_app(downloaded_path):
     system = platform.system()
 
     if system == "Windows":
@@ -90,7 +93,18 @@ def replace_app(downloaded_path):
         shutil.move(new_app_path, app_dir)
 
     else:
-        raise RuntimeError("Unsupported OS")
+        raise RuntimeError("Unsupported OS")"""
+
+def write_update_helper():
+    tpm_pth = tempfile.mkstemp(suffix=".py", prefix="update_helper_", dir=tempfile.gettempdir(), text=True)
+    pth = resource_path("update_helper.py")
+    with open(pth, "r") as f:
+        helper_code = f.read()
+
+    with open(tpm_pth[1], "w") as f:
+        f.write(helper_code)
+
+    return tpm_pth[1]
 
 
 def Update():
@@ -103,7 +117,15 @@ def Update():
     print("Update available. Downloading...")
     downloaded = download_update()
 
-    print("Replacing application...")
-    replace_app(downloaded)
+    helper_script = write_update_helper()
+
+    python_executable = sys.executable
+
+    current_process = sys.executable
+
+    subprocess.Popen([python_executable, helper_script, downloaded, current_process])
+
+    sys.exit(0)
+    
 
     print("Update complete. Restart the application.")

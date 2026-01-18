@@ -20,10 +20,12 @@ def load_template_from_path(template_path):
         f.write(msg.as_bytes())
 
 def create_new_email_template():
+    print("Creating new email template...")
     # Create a basic email template
     msg = EmailMessage()
     with open(TEMP_EML_PATH, 'wb') as f:
         f.write(msg.as_bytes())
+    print(f'TEMP_EML_PATH = {TEMP_EML_PATH}')
 
 def update_temp_email(html_content, text_content, subject=None):
     # Load the existing temp email
@@ -133,7 +135,13 @@ api = API()
 def open_editor(existing_html=None, existing_subject=None):
 
     if TEMP_EML_PATH is None or not os.path.exists(TEMP_EML_PATH):
+        print("no temp path found")
+        return
+    
+    if (os.path.getsize(TEMP_EML_PATH) == 0):
+        print("temp email is empty, creating new template")
         create_new_email_template()
+    
     else:
         existing_html = get_body_from_email()
         existing_subject = get_subject_from_email()

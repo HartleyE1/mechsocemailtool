@@ -30,14 +30,17 @@ def main():
     gui.start_gui(generate_emails)
 # Run the main function
 
-@atexit.register
-def cleanup_temp_files():
-    try:
-        os.remove(TEMP_EML_PATH)
-    except OSError:
-        pass
+
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
+
+    @atexit.register
+    def cleanup_temp_files():
+        try:
+            os.remove(TEMP_EML_PATH)
+        except OSError:
+            pass
+
     main()
 

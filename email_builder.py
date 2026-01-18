@@ -23,6 +23,8 @@ def create_new_email_template():
     print("Creating new email template...")
     # Create a basic email template
     msg = EmailMessage()
+    #add unsent flag to ensure it opens as a draft
+    msg['x-unsent'] = '1'
     with open(TEMP_EML_PATH, 'wb') as f:
         f.write(msg.as_bytes())
     print(f'TEMP_EML_PATH = {TEMP_EML_PATH}')

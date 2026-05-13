@@ -1,241 +1,144 @@
-import re
-import webview
-import os
-import re
+# email_builder.py
+# Helper functions and classes for building and managing email data
+# This module provides an easy frontend to interact with data structures that represent the components of an email, such as subject, body, sender, and recipient, along with other MIME components. It also includes functions to create and manipulate these email objects, as well as to convert them into formats suitable for sending or displaying.
+# This email builder creates, stores and loads HTML templates for emails using the Liquid templating engine. It also provides functions to render these templates with specific data, allowing for dynamic email content generation based on user input or other data sources.
 
-from temp_email import TEMP_EML_PATH
+# interactable email data structure
 
 import email
-from email.message import EmailMessage
-from email import policy
-from email.parser import BytesParser
-import email.utils
+import os
+from liquid import parse, render
+import yaml
 
-def load_template_from_path(template_path):
-    with open(template_path, 'rb') as f:
-        msg = BytesParser(policy=policy.default).parse(f)
-    if not isinstance(msg, EmailMessage):
-        raise TypeError("Parsed template is not an EmailMessage; ensure using BytesParser(policy=policy.default)")
-    with open(TEMP_EML_PATH, 'wb') as f:
-        f.write(msg.as_bytes())
+class Email:
 
-def create_new_email_template():
-    print("Creating new email template...")
-    # Create a basic email template
-    msg = EmailMessage()
-    #add unsent flag to ensure it opens as a draft
-    msg['x-unsent'] = '1'
-    with open(TEMP_EML_PATH, 'wb') as f:
-        f.write(msg.as_bytes())
-    print(f'TEMP_EML_PATH = {TEMP_EML_PATH}')
+    def __init__(self, subject: str, body: str, sender: str = "", recipient: str = ""):
+        self.subject = subject
+        self.body = body
+        self.sender = sender
+        self.recipient = recipient
+        self.data = {}
 
-def update_temp_email(html_content, text_content, subject=None):
-    # Load the existing temp email
-    with open(TEMP_EML_PATH, 'rb') as f:
-        msg = BytesParser(policy=policy.default).parse(f)
 
-    if not isinstance(msg, EmailMessage):
-        raise TypeError("Parsed template is not an EmailMessage")
+    def __str__(self):
+        return f"From: {self.sender}\nTo: {self.recipient}\nSubject: {self.subject}\n\n{self.body}"
+    
+    def parse_template(self, body, subject):
+        self.dynamic_body = parse(body)
+        self.dynamic_subject = parse(subject)
+    
+    def render_content(self, data):
+        body = self.dynamic_body.render(data)
+        subject = self.dynamic_subject.render(data)
+        return body, subject
 
-    # Remove all existing body parts (important!)
-    msg.clear_content()
+    def data(self, data: dict = {}):
+        if data:
+            self.data = data
+        else:
+            return self.data
 
-    # Rebuild the body as multipart/alternative
-    msg.set_content(text_content)                     # text/plain
-    msg.add_alternative(html_content, subtype='html') # text/html
+    def build_email(self):
+        
+        #render the email data into a MIME email object that can be sent using an email sending service
 
-    # Update subject if provided
-    if subject and subject.strip():
+        body, subject = self.render_content(self.data)
+
+        msg = email.message.EmailMessage()
+        msg['From'] = self.sender
+        msg['To'] = self.recipient
         msg['Subject'] = subject
-
-    # Save back to the temp email file
-    with open(TEMP_EML_PATH, 'wb') as f:
-        f.write(msg.as_bytes())
-
-
-def get_body_from_email():
-    with open(TEMP_EML_PATH, 'rb') as f:
-        msg = BytesParser(policy=policy.default).parse(f)
-
-    # Try HTML first
-    html_part = msg.get_body(preferencelist=('html'))
-    if html_part:
-        return html_part.get_content()
-
-    # Fallback to plain text
-    plain_part = msg.get_body(preferencelist=('plain'))
-    if plain_part:
-        return plain_part.get_content()
-
-    # Fallback 3
-    if msg.is_multipart():
-        for part in msg.walk():
-            ctype = part.get_content_type()
-            if ctype in ('text/html', 'text/plain'):
-                return part.get_content()
-
-    # AHHHHHHHHH just return empty idc
-    return ""
-
-def get_subject_from_email():
-    with open(TEMP_EML_PATH, 'rb') as f:
-        msg = BytesParser(policy=policy.default).parse(f)
-    return msg.get('Subject', '')
-
-
-
-class API:
-    def save_html(self, html, text, subject=None):
-        print("Received HTML:")
-        print(html)
-        print("Received Text:")
-        print(text)
-        update_temp_email(html, text, subject)
+        msg.set_content(body, subtype='html')
+        return msg
     
-    def open_file(self):
-        window = webview.windows[0]
-        result = window.create_file_dialog(
-            webview.OPEN_DIALOG,
-            allow_multiple=False,
-            file_types=('Email files (*.eml)', 'All files (*.*)')
-        )
-
-        if result:
-            template_path = result[0]
-            load_template_from_path(template_path)
-        
-        html_content = get_body_from_email()
-
-        return html_content
-    
-    def save_email_template(self, html, text, subject=None):
-
-        update_temp_email(html, text, subject)
-
-        window = webview.active_window()
-        if not window:
-            print("No active window :(")
-            return
-        
-        result = window.create_file_dialog(
-            webview.FileDialog.SAVE,
-            allow_multiple=False,
-            file_types=('Email files (*.eml)', 'All files (*.*)')
-        )
-
-        if result:
-            path = result[0]
-            with open(TEMP_EML_PATH, 'rb') as f_src:
-                with open(path, 'wb') as f_dst:
-                    f_dst.write(f_src.read())
-
-
-api = API()
 
 
 
-def open_editor(existing_html=None, existing_subject=None):
-
-    if TEMP_EML_PATH is None or not os.path.exists(TEMP_EML_PATH):
-        print("no temp path found")
-        return
-    
-    if (os.path.getsize(TEMP_EML_PATH) == 0):
-        print("temp email is empty, creating new template")
-        create_new_email_template()
-    
-    else:
-        existing_html = get_body_from_email()
-        existing_subject = get_subject_from_email()
-
-    updated_html = html.replace("{{BODY}}", existing_html or "")
-    updated_html = updated_html.replace("{{SUBJECT}}", existing_subject or "")
-
-    webview.create_window("Email Editor", html=updated_html, width=800, height=600, js_api=api)
-    webview.start()
 
 
-###--Webview HTML Content--###
+class template:
+    def __init__(self, subject: str, body: str, sender: str = "", recipient: str = ""):
+        self.subject = subject
+        self.body = body
+        self.sender = sender
+        self.recipient = recipient
 
-html = """
-<!DOCTYPE html>
-<html>
-  <head>
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-  </head>
-  <body>
-    <h1>Email Template Editor</h1>
+    #function to export the template as a file type which this program can read and use to create an email object
+    def export(self, filename: str, path: str = "./"):
+        if os.path.isabs(filename):
+            file_path = os.path.normpath(filename)
+        else:
+            base_path = path if os.path.isabs(path) else os.path.join(os.getcwd(), path)
+            file_path = os.path.normpath(os.path.join(base_path, filename))
+        with open(file_path, "w") as file:
+            file.write(f"---\n")
+            yaml_data = {
+                "subject": self.subject,
+                "sender": self.sender,
+                "recipient": self.recipient
+            }
+            file.write(yaml.dump(yaml_data))
+            file.write(f"---\n")
+            file.write(f"{self.body}\n")
+            
 
-    <script>
-      function openFile() {
-        window.pywebview.api.open_file().then(html_content => {
-          const delta = quill.clipboard.convert(html_content);
-          quill.setContents(delta);
-        });
-      }
 
-        function saveTemplate() {
-            const html = quill.root.innerHTML;
-            const text = quill.getText();
-            const subject = document.getElementById("subject").value;
-            window.pywebview.api.save_email_template(html, text, subject);
-        }
-    </script>
+#function to load a template from a file and return a template object
+def load(filename: str, path: str = "./"):
+    file_path = filename if os.path.isabs(filename) else os.path.join(path, filename)
+    with open(file_path, "r") as file:
+        content = file.read()
 
-    <ul style="list-style-type: none; padding: 0;">
-    <li style="float: left; padding-right: 10px;"><button onclick="openFile()" style="margin-bottom: 10px;">Open Template File</button></li>
-    <li style="float: left; padding-right: 10px;"><button onclick="saveTemplate()" style="margin-bottom: 10px;">Save Email Template</button></li>
-    </ul>
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("Template is missing YAML frontmatter.")
 
-    <input type="text" id="subject" placeholder="Subject" style="width: 100%; padding: 10px; margin-bottom: 10px; font-size: 16px;">
-    <div id="editor" style="height: 300px; margin-bottom: 10px;"></div>
-    <button onclick="sendToPython()">Save</button>
+    end_index = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            end_index = i
+            break
 
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script>
-      var ColorStyle = Quill.import('attributors/style/color');
-      var BackgroundStyle = Quill.import('attributors/style/background');
-      Quill.register(ColorStyle, true);
-      Quill.register(BackgroundStyle, true);
+    if end_index is None:
+        raise ValueError("Template frontmatter is not closed with '---'.")
 
-      var quill = new Quill('#editor', {
-        theme: 'snow',
-        modules: {
-          toolbar: [
-            [{ 'color': ['#000000', '#FFFFFF', '#ed1335', '#161616'] }],
-            ['bold', 'italic', 'underline'],
-            ['clean']
-          ]
-        }
-      });
+    frontmatter = "\n".join(lines[1:end_index])
+    body = "\n".join(lines[end_index + 1:])
 
-      function sendToPython() {
-        const html = quill.root.innerHTML;
-        const text = quill.getText();
-        const subject = document.getElementById("subject").value;
-        window.pywebview.api.save_html(html, text, subject);
-      }
-    </script>
-    <script>
-        const existingHTML = `{{BODY}}`;
-        const existingSubject = `{{SUBJECT}}`;
+    data = yaml.safe_load(frontmatter) or {}
+    subject = data.get("subject", "")
+    sender = data.get("sender", "")
+    recipient = data.get("recipient", "")
 
-        document.getElementById("subject").value = existingSubject;
+    return template(subject=subject, body=body, sender=sender, recipient=recipient)
 
-        window.addEventListener('pywebviewready', () => {
-            const delta = quill.clipboard.convert(existingHTML);
-            quill.setContents(delta);
-        });
-    </script>
-  </body>
-</html>
-"""
+def loads(template_string: str):
+    lines = template_string.splitlines()
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("Template is missing YAML frontmatter.")
 
-###--End of Webview HTML Content--###
+    end_index = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            end_index = i
+            break
 
-def launch_editor_process():
-    from email_builder import open_editor
-    open_editor()
+    if end_index is None:
+        raise ValueError("Template frontmatter is not closed with '---'.")
 
-if __name__ == "__main__":
-    open_editor()
+    frontmatter = "\n".join(lines[1:end_index])
+    body = "\n".join(lines[end_index + 1:])
+
+    data = yaml.safe_load(frontmatter) or {}
+    subject = data.get("subject", "")
+    sender = data.get("sender", "")
+    recipient = data.get("recipient", "")
+
+    return template(subject=subject, body=body, sender=sender, recipient=recipient)
+
+
+def verify_email_address(email_address: str) -> bool:
+    # simple regex to check if the email address is valid
+    import re
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(pattern, email_address) is not None

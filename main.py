@@ -4,7 +4,6 @@ import csv
 import io
 import json
 from pathlib import Path
-import re
 import pandas as pd
 import pyperclip
 import email_builder
@@ -84,7 +83,7 @@ def root():
                         .on('update:model-value', lambda: save_local_template(subject_input.value, body_input.value))
                     )
             with ui.button_group():
-                ui.button('generate emails')
+                ui.button('generate emails').on_click(lambda: confirm_generate_emails(confirm_dialog))
                 ui.button('preview email').on_click(lambda: open_preview(preview_dialog, email_preview))
 
     with ui.dialog() as preview_dialog:
@@ -93,6 +92,13 @@ def root():
             email_preview = ui.html().classes('w-full h-full')
             preview_dialog.on('opened', lambda: email_preview.set_content(preview_email()))
             ui.button('close').on_click(lambda: preview_dialog.close())     
+
+    with ui.dialog() as confirm_dialog:
+        with ui.card().classes('w-full'):
+            ui.label("Are you sure you want to generate the emails?")
+            with ui.button_group():
+                ui.button('cancel').on_click(lambda: confirm_dialog.close())
+                ui.button('confirm').on_click(lambda: [confirm_dialog.close(), generate_emails()])
 
 
 #def settings_page():
@@ -104,12 +110,22 @@ def root():
 # -- Spreadsheet Management --
 
 def clear_spreadsheet(spreadsheet):
-    spreadsheet.options['rowData'] = []
-
+    global df
+    df = df.iloc[0:0]
+    update_spreadsheet(spreadsheet)
 def update_spreadsheet(spreadsheet):
     global df
     spreadsheet.options['rowData'] = df.to_dict(orient='records')
     scale_spreadsheet(spreadsheet)
+
+def apply_dataframe_to_grid(spreadsheet, new_df: pd.DataFrame):
+    global df
+    df = new_df
+    spreadsheet.options['columnDefs'] = [
+        {'field': col, 'headerName': col} for col in df.columns
+    ]
+    update_spreadsheet(spreadsheet)
+    spreadsheet.update()
 
 def update_dataframe(spreadsheet):
     global df
@@ -136,13 +152,13 @@ def load_template_dialog(subject_input, body_input):
 
 def save_local_template(subject: str, body: str, sender: str = "", recipient: str = ""):
     global template
-    template = email_builder.template(
-        subject=normalize_liquid(subject),
-        body=normalize_liquid(body),
-        sender=sender,
-        recipient=recipient,
-    )
+    global root
+    template = email_builder.template(subject=subject, body=body, sender=sender, recipient=recipient)
 
+
+def confirm_generate_emails(confirm_dialog):
+
+    confirm_dialog.open()
 
 
 # ---- Dataframe Management ----
@@ -161,11 +177,12 @@ def paste_spreadsheet_from_clipboard(spreadsheet):
 
     try:
         new_df = _parse_clipboard_table(clipboard_data)
-        if list(new_df.columns) != list(df.columns) and len(new_df.columns) == len(df.columns):
-            new_df.columns = df.columns
-        df = pd.concat([df, new_df], ignore_index=True)
-        print(df)
-        update_spreadsheet(spreadsheet)
+        if df.empty or list(new_df.columns) != list(df.columns):
+            apply_dataframe_to_grid(spreadsheet, new_df)
+        else:
+            df = pd.concat([df, new_df], ignore_index=True)
+            print(df)
+            update_spreadsheet(spreadsheet)
     except Exception as e:
         print(f"Error parsing clipboard data: {e}")
 
@@ -201,12 +218,7 @@ def insert_template_into_editor(subject_input, body_input):
 
 def save_template(subject: str, body: str, sender: str = "", recipient: str = ""):
     global template
-    template = email_builder.template(
-        subject=normalize_liquid(subject),
-        body=normalize_liquid(body),
-        sender=sender,
-        recipient=recipient,
-    )
+    template = email_builder.template(subject=subject, body=body, sender=sender, recipient=recipient)
 
     file_path = filedialog.asksaveasfilename(title="Save template as", defaultextension=".mset", filetypes=[("MechSoc Email Template", "*.mset")])
     if file_path:
@@ -221,10 +233,11 @@ def preview_email():
         return "<em>No template or data available.</em>"
 
     sample_data = df.iloc[0].to_dict()
-    body = normalize_liquid(template.body)
-    subject = normalize_liquid(template.subject)
-    eml = email_builder.Email(subject=subject, body=body)
-    eml.parse_template(body, subject)
+
+    print(f'sample data for preview: {sample_data}')
+
+    eml = email_builder.Email(subject=template.subject, body=template.body)
+    eml.parse_template(template.body, template.subject)
     body, subject = eml.render_content(sample_data)
     return f"<h1>{subject}</h1><div>{body}</div>"
 
@@ -233,13 +246,18 @@ def open_preview(preview_dialog, email_preview):
     email_preview.set_content(preview_email())
     preview_dialog.open()
 
+def generate_emails():
+    buffer = email_builder.EmailBuffer()
+    
+    outpath = filedialog.askdirectory(title="Select output directory for generated emails")
+    if not outpath:
+        print("No output directory selected, cancelling email generation.")
+        return
 
-def normalize_liquid(text: str) -> str:
-    if not text:
-        return text
-    # Fix cases where the editor drops a closing brace: "{{ Name }" -> "{{ Name }}"
-    return re.sub(r"\{\{\s*([^}]+?)\s*\}(?!\})", r"{{ \1 }}", text)
-
+    buffer.set_template(template)
+    buffer.set_data_from_pandas(df)
+    buffer.compile_emails()
+    buffer.export_emails(outpath)
 
 
 # ---- Application Entry Point ----

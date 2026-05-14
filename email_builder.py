@@ -7,6 +7,7 @@
 
 import email
 import os
+import re
 from liquid import parse, render
 import yaml
 
@@ -24,6 +25,8 @@ class Email:
         return f"From: {self.sender}\nTo: {self.recipient}\nSubject: {self.subject}\n\n{self.body}"
     
     def parse_template(self, body, subject):
+        body = _normalize_liquid(body)
+        subject = _normalize_liquid(subject)
         self.dynamic_body = parse(body)
         self.dynamic_subject = parse(subject)
     
@@ -32,11 +35,11 @@ class Email:
         subject = self.dynamic_subject.render(data)
         return body, subject
 
-    def data(self, data: dict = {}):
-        if data:
-            self.data = data
-        else:
-            return self.data
+    def set_data(self, data: dict):
+        self.data = data
+
+    def get_data(self):
+        return self.data
 
     def build_email(self):
         
@@ -49,7 +52,79 @@ class Email:
         msg['To'] = self.recipient
         msg['Subject'] = subject
         msg.set_content(body, subtype='html')
+
+        msg['X-Unsent'] = '1'
+
+        msg['Message-ID'] = email.utils.make_msgid()
+
+
         return msg
+    
+
+
+
+class EmailBuffer:
+    def __init__(self):
+        self.emails = []
+        self.template = None
+        self.data =[{}]
+    
+    def compile_emails(self):
+        self.emails = []
+        for record in self.data:
+            email_addr = _get_value_by_key_regex(record, r"^(email|recipient)$")
+            if email_addr and not verify_email_address(email_addr):
+                email_addr = ""
+
+            email_obj = Email(
+                subject=self.template.subject,
+                body=self.template.body,
+                sender=self.template.sender,
+                recipient=self.template.recipient,
+            )
+            if email_addr:
+                email_obj.recipient = email_addr
+            email_obj.parse_template(self.template.body, self.template.subject)
+            email_obj.set_data(record)
+            self.emails.append(email_obj)
+        
+    def get_emails(self):
+        return self.emails
+    
+    def set_template(self, template):
+        self.template = template
+
+    def set_data(self, data):
+        self.data = data
+    
+    def set_data_from_pandas(self, df):
+        self.data = df.to_dict(orient='records')
+
+    def export_emails(self, path: str = "./emails"):
+        if os.path.isabs(path):
+            path = os.path.normpath(path)
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+        for i, email in enumerate(self.emails):
+            email_msg = email.build_email()
+            with open(os.path.join(path, f"email_{i+1}.eml"), "wb") as f:
+                f.write(email_msg.as_bytes())
+
+
+def _normalize_liquid(text: str) -> str:
+    if not text:
+        return text
+    # Fix missing closing brace for simple {{ var }} tags.
+    return re.sub(r"{{([^{}]*?)}(?!})", r"{{\1}}", text)
+
+
+def _get_value_by_key_regex(data: dict, pattern: str):
+    regex = re.compile(pattern, re.IGNORECASE)
+    for key, value in data.items():
+        if regex.search(str(key)):
+            return value
+    return None
     
 
 
@@ -80,7 +155,20 @@ class template:
             file.write(yaml.dump(yaml_data))
             file.write(f"---\n")
             file.write(f"{self.body}\n")
-            
+
+    def get_frontmatter(self):
+        #returns the frontmatter of the template as yaml data
+        yaml_data = {
+            "subject": self.subject,
+            "sender": self.sender,
+            "recipient": self.recipient
+        }
+        return yaml.dump(yaml_data)
+
+    def set_frontmatter(self, yaml_string: str):
+        #implement later. sets frontmatter of the template for advanced editing of the template in the gui.
+        pass
+
 
 
 #function to load a template from a file and return a template object
@@ -142,3 +230,5 @@ def verify_email_address(email_address: str) -> bool:
     import re
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(pattern, email_address) is not None
+
+

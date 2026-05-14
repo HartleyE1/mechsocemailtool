@@ -1,5 +1,0 @@
-pandas
-pyperclip
-pandastable
-requests
-pywebview

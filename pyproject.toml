@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mechsoc-email-tool"
+version = "0.1.0"
+description = "MechSoc Email Tool"
+requires-python = ">=3.10"
+dependencies = [
+  "nicegui",
+  "pandas",
+  "pyperclip",
+  "python-liquid",
+  "PyYAML",
+]
+
+[tool.setuptools]
+py-modules = ["main", "email_builder"]

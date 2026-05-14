@@ -1,7 +1,0 @@
-LICENSE
-pyproject.toml
-mechsoc_email_tool.egg-info/PKG-INFO
-mechsoc_email_tool.egg-info/SOURCES.txt
-mechsoc_email_tool.egg-info/dependency_links.txt
-mechsoc_email_tool.egg-info/requires.txt
-mechsoc_email_tool.egg-info/top_level.txt

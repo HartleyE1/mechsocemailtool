@@ -165,7 +165,12 @@ def confirm_generate_emails(confirm_dialog):
 
 def initialise_dataframe():
     df = pd.DataFrame(columns=["name", "company", "email"])
-    df = df._append({"name": "Alice", "company": "Company CO", "email": "alice@companyco.com"}, ignore_index=True)
+    df = pd.concat([
+        df,
+        pd.DataFrame([
+            {"name": "Alice", "company": "Company CO", "email": "alice@companyco.com"},
+        ]),
+    ], ignore_index=True)
     return df
 
 def paste_spreadsheet_from_clipboard(spreadsheet):

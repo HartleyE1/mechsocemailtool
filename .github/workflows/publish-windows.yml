@@ -30,10 +30,10 @@ jobs:
           pip install nicegui pyinstaller
 
       - name: Package NiceGUI app
-        run: nicegui-pack --onefile --name "mechsocemailtool-${{ matrix.os }}" main.py
+        run: nicegui-pack --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nicegui-${{ matrix.os }}
+          name: mechsocemailtool-${{ matrix.os }}
           path: dist

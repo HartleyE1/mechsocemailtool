@@ -43,7 +43,7 @@ def UI_start(test=False):
         ui.run(
             root,
             native=True,
-            title="Hello World",
+            title="MechSoc Email Tool",
             favicon=favicon,
             reload=False,
             port=native.find_open_port(),
@@ -54,7 +54,7 @@ def root():
 
     with ui.row().classes('w-full h-screen gap-6 flex-nowrap items-stretch'):
         with ui.column().classes('w-1/2 min-w-0'):
-            ui.label('Hello World')
+            ui.label('MechSoc Email Tool')
 
             spreadsheet = ui.aggrid.from_pandas(df).classes('max-h-40')
             spreadsheet.options["defaultColDef"] = {"editable": True, "filter": True, "resizable": True}

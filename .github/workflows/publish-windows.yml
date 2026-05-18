@@ -26,17 +26,33 @@ jobs:
       - name: Create venv
         run: python -m venv .venv
 
-      - name: Install dependencies
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
         run: |
           . .\.venv\Scripts\Activate.ps1
           python -m pip install --upgrade pip
           pip install -e .
           pip install pyinstaller
 
-      - name: Package NiceGUI app
+      - name: Install dependencies (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: |
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Package NiceGUI app (Windows)
+        if: runner.os == 'Windows'
         run: |
           . .\.venv\Scripts\Activate.ps1
-          .\.venv\Scripts\nicegui-pack.exe --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" --pyinstaller-args "--splash assets/mechsoc_256.png --icon assets/mechsoc_32.ico" main.py
+          .\.venv\Scripts\nicegui-pack.exe --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" --pyinstaller-args "--splash assets/splash.png --icon assets/mechsoc_32.ico" main.py
+
+      - name: Package NiceGUI app (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: |
+          source .venv/bin/activate
+          nicegui-pack --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" --pyinstaller-args "--splash assets/splash.png --icon assets/mechsoc_32.icns" main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

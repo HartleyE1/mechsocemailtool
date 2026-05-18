@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: mechsoc-email-tool
+Version: 0.1.0
+Summary: MechSoc Email Tool
+Requires-Python: >=3.10
+Requires-Dist: nicegui
+Requires-Dist: pandas
+Requires-Dist: pywebview
+Requires-Dist: pyperclip
+Requires-Dist: python-liquid
+Requires-Dist: PyYAML

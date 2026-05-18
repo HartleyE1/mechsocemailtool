@@ -1,15 +1,22 @@
-from nicegui import ui
+from multiprocessing import freeze_support
+from nicegui import native, ui
 import argparse
 import csv
 import io
 import json
 from pathlib import Path
+import sys
 import pandas as pd
 import pyperclip
 import email_builder
 from tkinter import filedialog
 
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+
+
+def _resolve_asset_path(name: str) -> Path:
+    base_dir = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return base_dir / "assets" / name
 
 
 def main():
@@ -27,12 +34,20 @@ def main():
 # ---- Graphical User Interface ----
 
 def UI_start(test=False):
-    favicon_path = str(ASSETS_DIR / "mechsoc_32.ico")
+    favicon_path = _resolve_asset_path("mechsoc_32.ico")
+    favicon = str(favicon_path) if favicon_path.exists() else None
     if test:
         print("Starting UI in test mode at http://localhost:8080")
-        ui.run(root, favicon=favicon_path)
+        ui.run(root, favicon=favicon, reload=False)
     else:
-        ui.run(root, native=True, title='Hello World', favicon=favicon_path)
+        ui.run(
+            root,
+            native=True,
+            title="Hello World",
+            favicon=favicon,
+            reload=False,
+            port=native.find_open_port(),
+        )
 
 def root():
     global df
@@ -147,8 +162,11 @@ def scale_spreadsheet(spreadsheet):
 def load_template_dialog(subject_input, body_input):
     filename = filedialog.askopenfilename(title="Select a template file", filetypes=[("MechSoc Email Template", "*.mset")])
     if filename:
-        load_template(filename)
-        insert_template_into_editor(subject_input, body_input)
+        try:
+            load_template(filename)
+            insert_template_into_editor(subject_input, body_input)
+        except Exception as exc:
+            ui.notify(f"Failed to load template: {exc}", type="negative")
 
 def save_local_template(subject: str, body: str, sender: str = "", recipient: str = ""):
     global template
@@ -175,12 +193,11 @@ def initialise_dataframe():
 
 def paste_spreadsheet_from_clipboard(spreadsheet):
     global df
-    clipboard_data = pyperclip.paste()
-    if not clipboard_data or not clipboard_data.strip():
-        print("No data in clipboard")
-        return
-
     try:
+        clipboard_data = pyperclip.paste()
+        if not clipboard_data or not clipboard_data.strip():
+            print("No data in clipboard")
+            return
         new_df = _parse_clipboard_table(clipboard_data)
         if df.empty or list(new_df.columns) != list(df.columns):
             apply_dataframe_to_grid(spreadsheet, new_df)
@@ -190,6 +207,7 @@ def paste_spreadsheet_from_clipboard(spreadsheet):
             update_spreadsheet(spreadsheet)
     except Exception as e:
         print(f"Error parsing clipboard data: {e}")
+        ui.notify(f"Clipboard error: {e}", type="negative")
 
 
 def _parse_clipboard_table(raw_text: str) -> pd.DataFrame:
@@ -253,6 +271,10 @@ def open_preview(preview_dialog, email_preview):
 
 def generate_emails():
     buffer = email_builder.EmailBuffer()
+
+    if template is None:
+        ui.notify("Please load or create a template before generating emails.", type="warning")
+        return
     
     outpath = filedialog.askdirectory(title="Select output directory for generated emails")
     if not outpath:
@@ -268,4 +290,5 @@ def generate_emails():
 # ---- Application Entry Point ----
 
 if __name__ in {"__main__", "__mp_main__"}:
+    freeze_support()
     main()

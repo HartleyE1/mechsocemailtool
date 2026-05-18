@@ -1,0 +1,6 @@
+nicegui
+pandas
+pywebview
+pyperclip
+python-liquid
+PyYAML

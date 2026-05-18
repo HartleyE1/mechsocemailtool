@@ -23,14 +23,20 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Create venv
+        run: python -m venv .venv
+
       - name: Install dependencies
         run: |
+          . .\.venv\Scripts\Activate.ps1
           python -m pip install --upgrade pip
           pip install -e .
-          pip install nicegui pyinstaller
+          pip install pyinstaller
 
       - name: Package NiceGUI app
-        run: nicegui-pack --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" main.py
+        run: |
+          . .\.venv\Scripts\Activate.ps1
+          .\.venv\Scripts\nicegui-pack.exe --onefile --windowed --splash assets/mechsoc_256.png --icon assets/mechsoc_32.ico --name "mechsocemailtool-${{ matrix.os }}" main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

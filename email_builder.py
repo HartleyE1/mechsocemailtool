@@ -70,6 +70,8 @@ class EmailBuffer:
         self.data =[{}]
     
     def compile_emails(self):
+        if self.template is None:
+            raise ValueError("No template set for email generation.")
         self.emails = []
         for record in self.data:
             email_addr = _get_value_by_key_regex(record, r"^(email|recipient)$")

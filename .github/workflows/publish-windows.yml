@@ -6,6 +6,10 @@ on:
     branches:
       - version2
 
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   publish:
     strategy:

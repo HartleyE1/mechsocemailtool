@@ -36,7 +36,7 @@ jobs:
       - name: Package NiceGUI app
         run: |
           . .\.venv\Scripts\Activate.ps1
-          .\.venv\Scripts\nicegui-pack.exe --onefile --windowed --splash assets/mechsoc_256.png --icon assets/mechsoc_32.ico --name "mechsocemailtool-${{ matrix.os }}" main.py
+          .\.venv\Scripts\nicegui-pack.exe --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" --pyinstaller-args "--splash assets/mechsoc_256.png --icon assets/mechsoc_32.ico" main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

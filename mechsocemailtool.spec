@@ -23,6 +23,8 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     icon_path = assets_dir / "mechsoc_32.icns"
 
+splash = None
+
 if sys.platform.startswith("win") or sys.platform.startswith("linux"):
     splash_image = Path("assets/splash.png")
     if splash_image.exists():

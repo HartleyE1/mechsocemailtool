@@ -64,6 +64,22 @@ jobs:
           name: mechsocemailtool-${{ matrix.os }}
           path: dist
 
+      - name: Rename binary for release
+        shell: bash
+        run: |
+          cd dist
+          case "${{ runner.os }}" in
+            Windows)
+              mv mechsocemailtool.exe mechsocemailtool-windows.exe
+              ;;
+            macOS)
+              mv mechsocemailtool mechsocemailtool-macos
+              ;;
+            Linux)
+              mv mechsocemailtool mechsocemailtool-linux
+              ;;
+          esac
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
         if: success()

@@ -16,4 +16,5 @@ __pycache__/
 *.pyc
 *.egg-info/
 *.spec
+!mechsocemailtool.spec
 .nicegui/

@@ -42,17 +42,17 @@ jobs:
           pip install -e .
           pip install pyinstaller
 
-      - name: Package NiceGUI app (Windows)
+      - name: Package app (Windows)
         if: runner.os == 'Windows'
         run: |
           . .\.venv\Scripts\Activate.ps1
-          .\.venv\Scripts\nicegui-pack.exe --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" --icon assets/mechsoc_32.ico --add-data "assets/splash.png;assets" main.py
+          python -m PyInstaller mechsocemailtool.spec
 
-      - name: Package NiceGUI app (macOS/Linux)
+      - name: Package app (macOS/Linux)
         if: runner.os != 'Windows'
         run: |
           source .venv/bin/activate
-          nicegui-pack --onefile --windowed --name "mechsocemailtool-${{ matrix.os }}" --icon assets/mechsoc_32.icns --add-data "assets/splash.png:assets" main.py
+          python -m PyInstaller mechsocemailtool.spec
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

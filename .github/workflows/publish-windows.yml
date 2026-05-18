@@ -64,37 +64,13 @@ jobs:
           name: mechsocemailtool-${{ matrix.os }}
           path: dist
 
-      - name: Deploy to GitHub Pages
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
         if: success()
-        shell: bash
-        run: |
-          # Determine OS folder name
-          case "${{ runner.os }}" in
-            Windows) OS_FOLDER="windows" ;;
-            macOS) OS_FOLDER="macos" ;;
-            Linux) OS_FOLDER="linux" ;;
-            *) OS_FOLDER="unknown" ;;
-          esac
-          
-          # Clone pages branch into temp directory
-          git clone --branch pages --depth 1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} pages_checkout
-          
-          # Create version/OS directory structure
-          mkdir -p "pages_checkout/downloads/version 2.0.1/${OS_FOLDER}"
-          
-          # Copy artifacts
-          cp dist/* "pages_checkout/downloads/version 2.0.1/${OS_FOLDER}/" || true
-          
-          # Commit and push
-          cd pages_checkout
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          
-          # Only commit if there are changes
-          if ! git diff --cached --quiet; then
-            git commit -m "Update $OS_FOLDER artifacts for version 2.0.1 [ci skip]"
-            git push origin pages
-          else
-            echo "No changes to commit for $OS_FOLDER"
-          fi
+        with:
+          files: dist/*
+          tag_name: v2.0.1
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -24,7 +24,7 @@ elif sys.platform == "darwin":
     icon_path = assets_dir / "mechsoc_32.icns"
 
 splash_image = assets_dir / "splash.png"
-splash = Splash(str(splash_image)) if splash_image.exists() else None
+splash = Splash(str(splash_image), [], []) if splash_image.exists() else None
 
 a = Analysis(
     ["main.py"],

@@ -6,7 +6,11 @@ from pathlib import Path
 from PyInstaller.building.splash import Splash
 from PyInstaller.utils.hooks import collect_data_files
 
-project_dir = Path(__file__).resolve().parent
+try:
+    project_dir = Path(__file__).resolve().parent
+except NameError:
+    project_dir = Path.cwd()
+
 assets_dir = project_dir / "assets"
 
 datas = collect_data_files("nicegui")

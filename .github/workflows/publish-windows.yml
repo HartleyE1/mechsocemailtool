@@ -78,6 +78,7 @@ jobs:
               elif [ -f mechsocemailtool ]; then
                 mv mechsocemailtool mechsocemailtool-macos
               else
+                ls -la
                 echo "Expected mechsocemailtool.app or mechsocemailtool in dist/, but neither was found. Check PyInstaller build logs for errors."
                 exit 1
               fi

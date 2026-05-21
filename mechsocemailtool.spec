@@ -32,7 +32,7 @@ if sys.platform.startswith("win") or sys.platform.startswith("linux"):
             import tkinter
         except ImportError:
             # Splash requires tkinter at build/runtime; skip splash if unavailable.
-            pass
+            print("tkinter not available; building without splash screen.")
         else:
             splash = Splash(str(splash_image), [], [])
 

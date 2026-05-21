@@ -74,7 +74,7 @@ jobs:
               ;;
             macOS)
               if [ -d mechsocemailtool.app ]; then
-                ditto -c -k --sequesterRsrc --keepParent mechsocemailtool.app mechsocemailtool-macos.app.zip
+                ditto -c -k --sequesterRsrc --keepParent mechsocemailtool.app mechsocemailtool-macos.zip
               elif [ -f mechsocemailtool ]; then
                 mv mechsocemailtool mechsocemailtool-macos
               else

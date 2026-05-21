@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import sys
+from importlib import import_module
 from pathlib import Path
 
 from PyInstaller.building.splash import Splash
@@ -29,7 +30,7 @@ if sys.platform.startswith("win") or sys.platform.startswith("linux"):
     splash_image = Path("assets/splash.png")
     if splash_image.exists():
         try:
-            import tkinter  # noqa: F401
+            import_module("tkinter")
         except ImportError:
             pass
         else:

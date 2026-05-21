@@ -77,6 +77,9 @@ jobs:
                 ditto -c -k --sequesterRsrc --keepParent mechsocemailtool.app mechsocemailtool-macos.app.zip
               elif [ -f mechsocemailtool ]; then
                 mv mechsocemailtool mechsocemailtool-macos
+              else
+                echo "Expected mechsocemailtool.app or mechsocemailtool in dist/, but neither was found."
+                exit 1
               fi
               ;;
             Linux)

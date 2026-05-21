@@ -28,7 +28,12 @@ splash = None
 if sys.platform.startswith("win") or sys.platform.startswith("linux"):
     splash_image = Path("assets/splash.png")
     if splash_image.exists():
-        splash = Splash(str(splash_image), [], [])
+        try:
+            import tkinter  # noqa: F401
+        except Exception:
+            splash = None
+        else:
+            splash = Splash(str(splash_image), [], [])
 
 a = Analysis(
     ["main.py"],
@@ -63,3 +68,11 @@ exe = EXE(
     icon=str(icon_path) if icon_path and icon_path.exists() else None,
     splash=splash,
 )
+
+if sys.platform == "darwin":
+    app = BUNDLE(
+        exe,
+        name="mechsocemailtool.app",
+        icon=str(icon_path) if icon_path and icon_path.exists() else None,
+        bundle_identifier="uk.ac.bath.mechsoc.emailtool",
+    )

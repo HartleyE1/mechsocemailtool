@@ -73,7 +73,11 @@ jobs:
               mv mechsocemailtool.exe mechsocemailtool-windows.exe
               ;;
             macOS)
-              mv mechsocemailtool mechsocemailtool-macos
+              if [ -d mechsocemailtool.app ]; then
+                ditto -c -k --sequesterRsrc --keepParent mechsocemailtool.app mechsocemailtool-macos.app.zip
+              elif [ -f mechsocemailtool ]; then
+                mv mechsocemailtool mechsocemailtool-macos
+              fi
               ;;
             Linux)
               mv mechsocemailtool mechsocemailtool-linux

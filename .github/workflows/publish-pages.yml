@@ -10,6 +10,9 @@ jobs:
   publish:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      MAC_INTEL_ZIP: mechsoc_email_tool_macos_intel.zip
+      MAC_SILICON_ZIP: mechsoc_email_tool_macos_silicon.zip
 
     steps:
       - name: Checkout pages branch
@@ -42,8 +45,6 @@ jobs:
 
       - name: Generate links.html
         run: |
-          MAC_INTEL_ZIP="mechsoc_email_tool_macos_intel.zip"
-          MAC_SILICON_ZIP="mechsoc_email_tool_macos_silicon.zip"
           mkdir -p download
           rm -f download/links.html
           echo "<h2>Latest Downloads</h2>" > download/links.html

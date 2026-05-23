@@ -43,7 +43,7 @@ jobs:
       - name: Zip .app bundle
         run: |
           cd dist
-          zip -r mechsoc_email_tool_macos.zip "MechSoc Email Tool.app"
+          ditto -c -k --sequesterRsrc --keepParent "MechSoc Email Tool.app" mechsoc_email_tool_macos.zip
 
 
       - name: Upload macOS artifact

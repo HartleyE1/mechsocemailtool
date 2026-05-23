@@ -3,7 +3,7 @@ name: Publish Latest Builds to GitHub Pages
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Build Windows App"]
+    workflows: ["Build Windows App", "Build macOS App"]
     types: [completed]
 
 jobs:
@@ -30,8 +30,15 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build-macos.yml
-          name: macOS-app
-          path: download/macos
+          name: macOS-app-intel
+          path: download/macos/intel
+
+      - name: Download macOS Silicon artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: build-macos.yml
+          name: macOS-app-silicon
+          path: download/macos/silicon
 
       - name: Generate links.html
         run: |
@@ -40,7 +47,8 @@ jobs:
           echo "<h2>Latest Downloads</h2>" > download/links.html
           echo "<ul>" >> download/links.html
           echo "<li><a href='/mechsocemailtool/download/windows/MechSoc Email Tool.exe'>Windows (.exe)</a></li>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/macos/mechsoc_email_tool_macos.zip'>macOS (.zip)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macos/intel/mechsoc_email_tool_macos_intel.zip'>macOS Intel (.zip)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macos/silicon/mechsoc_email_tool_macos_silicon.zip'>macOS Apple Silicon (.zip)</a></li>" >> download/links.html
           echo "</ul>" >> download/links.html
 
 

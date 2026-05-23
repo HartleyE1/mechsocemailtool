@@ -11,7 +11,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - arch: intel
+            runner: macos-13
+          - arch: silicon
+            runner: macos-14
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +33,7 @@ jobs:
           pip install .
           pip install pyinstaller
 
-      - name: Build app
+      - name: Build app (${{ matrix.arch }})
         run: |
           python -m PyInstaller --onefile --windowed \
             --icon="assets/mechsoc_32.ico" \
@@ -36,18 +43,22 @@ jobs:
             --add-data "version_info.json:." \
             main.py
 
-      - name: Rename .app bundle
+      - name: Rename .app bundle (${{ matrix.arch }})
         run: |
-          mv dist/main.app "dist/MechSoc Email Tool.app"
+          mv dist/main.app "dist/MechSoc Email Tool-${{ matrix.arch }}.app"
 
-      - name: Zip .app bundle
+      - name: Zip .app bundle (${{ matrix.arch }})
         run: |
           cd dist
-          ditto -c -k --sequesterRsrc --keepParent "MechSoc Email Tool.app" mechsoc_email_tool_macos.zip
+          ditto -c -k --sequesterRsrc --keepParent "MechSoc Email Tool-${{ matrix.arch }}.app" mechsoc_email_tool_macos_${{ matrix.arch }}.zip
 
 
-      - name: Upload macOS artifact
+      - name: Upload macOS artifact (${{ matrix.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-app
-          path: dist/mechsoc_email_tool_macos.zip
+          name: macOS-app-${{ matrix.arch }}
+          path: dist/mechsoc_email_tool_macos_${{ matrix.arch }}.zip
+
+      - name: Artifact summary
+        run: |
+          echo "Built macOS ${{ matrix.arch }} artifact: mechsoc_email_tool_macos_${{ matrix.arch }}.zip"

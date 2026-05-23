@@ -16,8 +16,10 @@ jobs:
         include:
           - arch: intel
             runner: macos-13
+            app_label: Intel
           - arch: silicon
             runner: macos-14
+            app_label: Apple Silicon
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -45,12 +47,12 @@ jobs:
 
       - name: Rename .app bundle (${{ matrix.arch }})
         run: |
-          mv dist/main.app "dist/MechSoc Email Tool-${{ matrix.arch }}.app"
+          mv dist/main.app "dist/MechSoc Email Tool (${{ matrix.app_label }}).app"
 
       - name: Zip .app bundle (${{ matrix.arch }})
         run: |
           cd dist
-          ditto -c -k --sequesterRsrc --keepParent "MechSoc Email Tool-${{ matrix.arch }}.app" mechsoc_email_tool_macos_${{ matrix.arch }}.zip
+          ditto -c -k --sequesterRsrc --keepParent "MechSoc Email Tool (${{ matrix.app_label }}).app" mechsoc_email_tool_macos_${{ matrix.arch }}.zip
 
 
       - name: Upload macOS artifact (${{ matrix.arch }})

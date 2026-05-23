@@ -42,13 +42,15 @@ jobs:
 
       - name: Generate links.html
         run: |
+          MAC_INTEL_ZIP="mechsoc_email_tool_macos_intel.zip"
+          MAC_SILICON_ZIP="mechsoc_email_tool_macos_silicon.zip"
           mkdir -p download
           rm -f download/links.html
           echo "<h2>Latest Downloads</h2>" > download/links.html
           echo "<ul>" >> download/links.html
           echo "<li><a href='/mechsocemailtool/download/windows/MechSoc Email Tool.exe'>Windows (.exe)</a></li>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/macos/intel/mechsoc_email_tool_macos_intel.zip'>macOS Intel (.zip)</a></li>" >> download/links.html
-          echo "<li><a href='/mechsocemailtool/download/macos/silicon/mechsoc_email_tool_macos_silicon.zip'>macOS Apple Silicon (.zip)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macos/intel/${MAC_INTEL_ZIP}'>macOS Intel (.zip)</a></li>" >> download/links.html
+          echo "<li><a href='/mechsocemailtool/download/macos/silicon/${MAC_SILICON_ZIP}'>macOS Apple Silicon (.zip)</a></li>" >> download/links.html
           echo "</ul>" >> download/links.html
 
 

@@ -15,7 +15,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            arch: x86_64
+          - os: ubuntu-latest
+            arch: x86_64
+          - os: macos-latest
+            arch: x86_64
+          - os: macos-latest
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -57,6 +65,22 @@ jobs:
         run: |
           source .venv/bin/activate
           python -m PyInstaller mechsocemailtool.spec
+          cd dist
+          BINARY=mechsocemailtool
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            ARCH=${{ matrix.arch }}
+            TAR_NAME="${BINARY}-macos-${ARCH}.tar.gz"
+            if [ -f "$BINARY" ]; then
+              chmod +x "$BINARY"
+              tar -czf "$TAR_NAME" "$BINARY"
+            fi
+          else
+            TAR_NAME="${BINARY}-linux.tar.gz"
+            if [ -f "$BINARY" ]; then
+              chmod +x "$BINARY"
+              tar -czf "$TAR_NAME" "$BINARY"
+            fi
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -70,13 +94,15 @@ jobs:
           cd dist
           case "${{ runner.os }}" in
             Windows)
-              mv mechsocemailtool.exe mechsocemailtool-windows.exe
+              if [ -f mechsocemailtool.exe ]; then
+                mv mechsocemailtool.exe mechsocemailtool-windows.exe
+              fi
               ;;
             macOS)
-              mv mechsocemailtool mechsocemailtool-macos
+              # macOS builds are packaged into tar.gz named with arch already
               ;;
             Linux)
-              mv mechsocemailtool mechsocemailtool-linux
+              # Linux builds are packaged into tar.gz already
               ;;
           esac
 

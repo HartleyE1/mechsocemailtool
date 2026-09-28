@@ -74,7 +74,7 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*
+          files: dist/mechsocemailtool-macos-x86_64.tar.gz
           tag_name: v${{ steps.version.outputs.version }}
           draft: false
           prerelease: false

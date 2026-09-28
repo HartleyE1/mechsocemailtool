@@ -49,8 +49,12 @@ jobs:
         shell: pwsh
         run: |
           $tag = "v${{ steps.version.outputs.version }}"
+          $previousErrorActionPreference = $ErrorActionPreference
+          $ErrorActionPreference = "Continue"
           gh release view $tag --json tagName 2>$null | Out-Null
-          if ($LASTEXITCODE -eq 0) {
+          $releaseExitCode = $LASTEXITCODE
+          $ErrorActionPreference = $previousErrorActionPreference
+          if ($releaseExitCode -eq 0) {
             echo "exists=true" >> $env:GITHUB_OUTPUT
           } else {
             echo "exists=false" >> $env:GITHUB_OUTPUT
@@ -82,7 +86,7 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*
+          files: dist/mechsocemailtool-windows.exe
           tag_name: v${{ steps.version.outputs.version }}
           draft: false
           prerelease: false

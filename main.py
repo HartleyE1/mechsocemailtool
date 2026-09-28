@@ -72,7 +72,7 @@ def root():
                 ui.button('save email as template').on_click(lambda: save_template(subject_input.value or "", body_input.value or ""))
             with ui.card().classes('w-full h-full'):
                 with ui.column().classes('w-full h-full gap-4'):
-                    subject_input = ui.input(placeholder='Subject').classes('w-full').props('rounded outlined dense').on('update:model-value', lambda: save_local_template(subject_input.value or "", body_input.value or ""))
+                    subject_input = ui.input(placeholder='Subject').classes('w-full').props('rounded outlined dense').on('blur', lambda: save_local_template(subject_input.value or "", body_input.value or ""))
                     body_toolbar = [
                         ['bold', 'italic', 'underline', 'strike'],
                         ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
@@ -96,7 +96,7 @@ def root():
                         .classes('w-full h-full')
                         .props('rounded outlined dense')
                         .props(f":toolbar='{json.dumps(body_toolbar)}'")
-                        .on('update:model-value', lambda: save_local_template(subject_input.value or "", body_input.value or ""))
+                        .on('blur', lambda: save_local_template(subject_input.value or "", body_input.value or ""))
                     )
             with ui.button_group():
                 ui.button('generate emails').on_click(lambda: confirm_generate_emails(confirm_dialog))

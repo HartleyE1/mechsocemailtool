@@ -49,11 +49,11 @@ jobs:
         shell: pwsh
         run: |
           $tag = "v${{ steps.version.outputs.version }}"
-          $previousErrorActionPreference = $ErrorActionPreference
-          $ErrorActionPreference = "Continue"
+          $previousNativeCommandPreference = $PSNativeCommandUseErrorActionPreference
+          $PSNativeCommandUseErrorActionPreference = $false
           gh release view $tag --json tagName 2>$null | Out-Null
           $releaseExitCode = $LASTEXITCODE
-          $ErrorActionPreference = $previousErrorActionPreference
+          $PSNativeCommandUseErrorActionPreference = $previousNativeCommandPreference
           if ($releaseExitCode -eq 0) {
             echo "exists=true" >> $env:GITHUB_OUTPUT
           } else {

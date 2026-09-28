@@ -36,12 +36,11 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          python - <<'PYEOF' >> $env:GITHUB_OUTPUT
-          import tomllib
-          with open('pyproject.toml', 'rb') as f:
-              data = tomllib.load(f)
-          print('version=' + data['project']['version'])
-          PYEOF
+          $version = (Get-Content pyproject.toml | Select-String '^\s*version\s*=\s*"([^"]+)"$').Matches.Groups[1].Value
+          if (-not $version) {
+            throw "Could not read project version from pyproject.toml"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Check if release exists for this version
         id: check

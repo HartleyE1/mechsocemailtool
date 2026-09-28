@@ -69,10 +69,10 @@ def root():
             ui.label('Email Editor')
             with ui.button_group():
                 ui.button('load template').on_click(lambda: load_template_dialog(subject_input, body_input))
-                ui.button('save email as template').on_click(lambda: save_template(subject_input.value, body_input.value))
+                ui.button('save email as template').on_click(lambda: save_template(subject_input.value or "", body_input.value or ""))
             with ui.card().classes('w-full h-full'):
                 with ui.column().classes('w-full h-full gap-4'):
-                    subject_input = ui.input(placeholder='Subject').classes('w-full').props('rounded outlined dense').on('update:model-value', lambda: save_local_template(subject_input.value, body_input.value))
+                    subject_input = ui.input(placeholder='Subject').classes('w-full').props('rounded outlined dense').on('update:model-value', lambda: save_local_template(subject_input.value or "", body_input.value or ""))
                     body_toolbar = [
                         ['bold', 'italic', 'underline', 'strike'],
                         ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
@@ -96,7 +96,7 @@ def root():
                         .classes('w-full h-full')
                         .props('rounded outlined dense')
                         .props(f":toolbar='{json.dumps(body_toolbar)}'")
-                        .on('update:model-value', lambda: save_local_template(subject_input.value, body_input.value))
+                        .on('update:model-value', lambda: save_local_template(subject_input.value or "", body_input.value or ""))
                     )
             with ui.button_group():
                 ui.button('generate emails').on_click(lambda: confirm_generate_emails(confirm_dialog))
@@ -223,7 +223,7 @@ def _parse_clipboard_table(raw_text: str) -> pd.DataFrame:
     text = raw_text.strip("\n\r\t ")
     sample = "\n".join(text.splitlines()[:10])
     try:
-        dialect = csv.Sniffer().sniff(sample, delimiters=["\t", ",", ";", "|"])
+        dialect = csv.Sniffer().sniff(sample, delimiters="\t,;|")
         sep = dialect.delimiter
     except csv.Error:
         sep = "\t"

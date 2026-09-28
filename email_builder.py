@@ -5,7 +5,8 @@
 
 # interactable email data structure
 
-import email
+from email.message import EmailMessage
+from email.utils import make_msgid
 import os
 import re
 from liquid import parse, render
@@ -47,7 +48,7 @@ class Email:
 
         body, subject = self.render_content(self.data)
 
-        msg = email.message.EmailMessage()
+        msg = EmailMessage()
         msg['From'] = self.sender
         msg['To'] = self.recipient
         msg['Subject'] = subject
@@ -55,7 +56,7 @@ class Email:
 
         msg['X-Unsent'] = '1'
 
-        msg['Message-ID'] = email.utils.make_msgid()
+        msg['Message-ID'] = make_msgid()
 
 
         return msg
@@ -240,5 +241,4 @@ def verify_email_address(email_address: str) -> bool:
     import re
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(pattern, email_address) is not None
-
 

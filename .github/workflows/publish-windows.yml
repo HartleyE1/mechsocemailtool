@@ -6,6 +6,10 @@ on:
     branches:
       - version2
 
+concurrency:
+  group: mechsocemailtool-release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -42,32 +46,12 @@ jobs:
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Check if release exists for this version
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: pwsh
-        run: |
-          $tag = "v${{ steps.version.outputs.version }}"
-          $previousNativeCommandPreference = $PSNativeCommandUseErrorActionPreference
-          $PSNativeCommandUseErrorActionPreference = $false
-          gh release view $tag --json tagName 2>$null | Out-Null
-          $releaseExitCode = $LASTEXITCODE
-          $PSNativeCommandUseErrorActionPreference = $previousNativeCommandPreference
-          if ($releaseExitCode -eq 0) {
-            echo "exists=true" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "exists=false" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Package app
-        if: steps.check.outputs.exists == 'false'
         run: |
           . .\.venv\Scripts\Activate.ps1
           python -m PyInstaller mechsocemailtool.spec
 
       - name: Rename binary for release
-        if: steps.check.outputs.exists == 'false'
         shell: bash
         run: |
           cd dist
@@ -76,19 +60,18 @@ jobs:
           fi
 
       - name: Upload artifact
-        if: steps.check.outputs.exists == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: mechsocemailtool-windows
           path: dist
 
       - name: Upload to GitHub Release
-        if: steps.check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
           files: dist/mechsocemailtool-windows.exe
           tag_name: v${{ steps.version.outputs.version }}
           draft: false
           prerelease: false
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

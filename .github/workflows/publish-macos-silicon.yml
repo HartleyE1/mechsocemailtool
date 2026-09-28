@@ -6,6 +6,10 @@ on:
     branches:
       - version2
 
+concurrency:
+  group: mechsocemailtool-release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -41,21 +45,7 @@ jobs:
           version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Check if release exists for this version
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          tag="v${{ steps.version.outputs.version }}"
-          if gh release view "$tag" --json tagName >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Package app
-        if: steps.check.outputs.exists == 'false'
         run: |
           source .venv/bin/activate
           python -m PyInstaller mechsocemailtool.spec
@@ -64,19 +54,18 @@ jobs:
           tar -czf mechsocemailtool-macos-arm64.tar.gz mechsocemailtool
 
       - name: Upload artifact
-        if: steps.check.outputs.exists == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: mechsocemailtool-macos-silicon
           path: dist
 
       - name: Upload to GitHub Release
-        if: steps.check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
           files: dist/mechsocemailtool-macos-arm64.tar.gz
           tag_name: v${{ steps.version.outputs.version }}
           draft: false
           prerelease: false
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

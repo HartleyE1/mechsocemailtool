@@ -1,4 +1,4 @@
-name: Publish Windows
+name: Publish macOS Intel
 
 on:
   workflow_dispatch:
@@ -11,7 +11,9 @@ permissions:
 
 jobs:
   publish:
-    runs-on: windows-latest
+    runs-on: macos-latest
+    env:
+      ARCH: x86_64
 
     steps:
       - name: Checkout
@@ -27,56 +29,49 @@ jobs:
 
       - name: Install dependencies
         run: |
-          . .\.venv\Scripts\Activate.ps1
+          source .venv/bin/activate
           python -m pip install --upgrade pip
           pip install -e .
           pip install pyinstaller
 
       - name: Get version from pyproject.toml
         id: version
-        shell: pwsh
+        shell: bash
         run: |
-          python -c "
+          python -c '
 import tomllib
-with open('pyproject.toml', 'rb') as f:
+with open("pyproject.toml", "rb") as f:
     data = tomllib.load(f)
-print('version=' + data['project']['version'])
-          " >> $env:GITHUB_OUTPUT
+print("version=" + data["project"]["version"])
+          ' >> $GITHUB_OUTPUT
 
       - name: Check if release exists for this version
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: pwsh
+        shell: bash
         run: |
-          $tag = "v${{ steps.version.outputs.version }}"
-          gh release view $tag --json tagName 2>$null | Out-Null
-          if ($LASTEXITCODE -eq 0) {
-            echo "exists=true" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "exists=false" >> $env:GITHUB_OUTPUT
-          }
+          tag="v${{ steps.version.outputs.version }}"
+          if gh release view "$tag" --json tagName >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Package app
         if: steps.check.outputs.exists == 'false'
         run: |
-          . .\.venv\Scripts\Activate.ps1
+          source .venv/bin/activate
           python -m PyInstaller mechsocemailtool.spec
-
-      - name: Rename binary for release
-        if: steps.check.outputs.exists == 'false'
-        shell: bash
-        run: |
           cd dist
-          if [ -f mechsocemailtool.exe ]; then
-            mv mechsocemailtool.exe mechsocemailtool-windows.exe
-          fi
+          chmod +x mechsocemailtool
+          tar -czf mechsocemailtool-macos-x86_64.tar.gz mechsocemailtool
 
       - name: Upload artifact
         if: steps.check.outputs.exists == 'false'
         uses: actions/upload-artifact@v4
         with:
-          name: mechsocemailtool-windows
+          name: mechsocemailtool-macos-intel
           path: dist
 
       - name: Upload to GitHub Release

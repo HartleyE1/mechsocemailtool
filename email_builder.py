@@ -69,11 +69,12 @@ class EmailBuffer:
         self.template = None
         self.data =[{}]
     
-    def compile_emails(self):
+    def compile_emails(self, progress_callback=None):
         if self.template is None:
             raise ValueError("No template set for email generation.")
         self.emails = []
-        for record in self.data:
+        total_records = len(self.data)
+        for idx, record in enumerate(self.data):
             email_addr = _get_value_by_key_regex(record, r"^(email|recipient)$")
             if email_addr and not verify_email_address(email_addr):
                 email_addr = ""
@@ -89,6 +90,9 @@ class EmailBuffer:
             email_obj.parse_template(self.template.body, self.template.subject)
             email_obj.set_data(record)
             self.emails.append(email_obj)
+            if progress_callback:
+                progress = int((idx + 1) / total_records * 50)
+                progress_callback(progress, f"Compiling emails ({idx + 1}/{total_records})")
         
     def get_emails(self):
         return self.emails
@@ -102,16 +106,20 @@ class EmailBuffer:
     def set_data_from_pandas(self, df):
         self.data = df.to_dict(orient='records')
 
-    def export_emails(self, path: str = "./emails"):
+    def export_emails(self, path: str = "./emails", progress_callback=None):
         if os.path.isabs(path):
             path = os.path.normpath(path)
 
         if not os.path.exists(path):
             os.makedirs(path)
+        total_emails = len(self.emails)
         for i, email in enumerate(self.emails):
             email_msg = email.build_email()
             with open(os.path.join(path, f"email_{i+1}.eml"), "wb") as f:
                 f.write(email_msg.as_bytes())
+            if progress_callback:
+                progress = 50 + int((i + 1) / total_emails * 50)
+                progress_callback(progress, f"Exporting emails ({i + 1}/{total_emails})")
 
 
 def _normalize_liquid(text: str) -> str:

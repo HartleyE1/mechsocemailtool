@@ -6,6 +6,7 @@ import io
 import json
 from pathlib import Path
 import sys
+import threading
 import pandas as pd
 import pyperclip
 import email_builder
@@ -110,10 +111,18 @@ def root():
 
     with ui.dialog() as confirm_dialog:
         with ui.card().classes('w-full'):
-            ui.label("Are you sure you want to generate the emails?")
+            confirmation_label = ui.label("Are you sure you want to generate the emails?")
+            progress_label = ui.label("").classes('text-sm text-grey')
+            progress_bar = ui.linear_progress(value=0).classes('w-full')
+            status_label = ui.label("").classes('text-sm')
+            progress_bar.visible = False
+            progress_label.visible = False
+            status_label.visible = False
+            close_button = ui.button('close').on_click(lambda: confirm_dialog.close())
+            close_button.visible = False
             with ui.button_group():
-                ui.button('cancel').on_click(lambda: confirm_dialog.close())
-                ui.button('confirm').on_click(lambda: [confirm_dialog.close(), generate_emails()])
+                cancel_btn = ui.button('cancel').on_click(lambda: confirm_dialog.close())
+                confirm_btn = ui.button('confirm').on_click(lambda: [confirmation_label.set_text("Generating emails..."), cancel_btn.set_enabled(False), confirm_btn.set_enabled(False), threading.Thread(target=generate_emails, args=(progress_bar, progress_label, status_label, cancel_btn, confirm_btn, close_button), daemon=True).start()])
 
 
 #def settings_page():
@@ -269,22 +278,65 @@ def open_preview(preview_dialog, email_preview):
     email_preview.set_content(preview_email())
     preview_dialog.open()
 
-def generate_emails():
+def generate_emails(progress_bar=None, progress_label=None, status_label=None, cancel_btn=None, confirm_btn=None, close_button=None):
     buffer = email_builder.EmailBuffer()
 
     if template is None:
-        ui.notify("Please load or create a template before generating emails.", type="warning")
+        if status_label:
+            status_label.text = "Error: Please load or create a template before generating emails."
+            status_label.classes('text-red-500')
+            status_label.visible = True
         return
     
     outpath = filedialog.askdirectory(title="Select output directory for generated emails")
     if not outpath:
         print("No output directory selected, cancelling email generation.")
+        if status_label:
+            status_label.visible = False
+        if cancel_btn:
+            cancel_btn.enabled = True
+        if confirm_btn:
+            confirm_btn.enabled = True
         return
 
-    buffer.set_template(template)
-    buffer.set_data_from_pandas(df)
-    buffer.compile_emails()
-    buffer.export_emails(outpath)
+    # Show progress elements
+    if progress_bar:
+        progress_bar.visible = True
+    if progress_label:
+        progress_label.visible = True
+
+    def update_progress(percentage, status_text):
+        if progress_bar:
+            progress_bar.value = percentage / 100.0
+        if progress_label:
+            progress_label.text = status_text
+
+    try:
+        buffer.set_template(template)
+        buffer.set_data_from_pandas(df)
+        buffer.compile_emails(progress_callback=update_progress)
+        buffer.export_emails(outpath, progress_callback=update_progress)
+        if status_label:
+            status_label.text = "✓ Emails generated successfully!"
+            status_label.classes('text-green-500', remove='text-red-500')
+            status_label.visible = True
+    except Exception as e:
+        if status_label:
+            status_label.text = f"✗ Error generating emails: {e}"
+            status_label.classes('text-red-500', remove='text-green-500')
+            status_label.visible = True
+        print(f"Error: {e}")
+    finally:
+        if progress_bar:
+            progress_bar.visible = False
+        if progress_label:
+            progress_label.visible = False
+        if close_button:
+            close_button.visible = True
+        if cancel_btn:
+            cancel_btn.visible = False
+        if confirm_btn:
+            confirm_btn.visible = False
 
 
 # ---- Application Entry Point ----

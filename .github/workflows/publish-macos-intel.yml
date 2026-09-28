@@ -38,12 +38,12 @@ jobs:
         id: version
         shell: bash
         run: |
-          python -c '
-import tomllib
-with open("pyproject.toml", "rb") as f:
-    data = tomllib.load(f)
-print("version=" + data["project"]["version"])
-          ' >> $GITHUB_OUTPUT
+          python - <<'PYEOF' >> $GITHUB_OUTPUT
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+          print('version=' + data['project']['version'])
+          PYEOF
 
       - name: Check if release exists for this version
         id: check

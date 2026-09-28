@@ -1,0 +1,87 @@
+name: Publish Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - version2
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create venv
+        run: python -m venv .venv
+
+      - name: Install dependencies
+        run: |
+          . .\.venv\Scripts\Activate.ps1
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Get version from pyproject.toml
+        id: version
+        shell: pwsh
+        run: |
+          $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Check if release exists for this version
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $tag = "v${{ steps.version.outputs.version }}"
+          gh release view $tag --json tagName 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            echo "exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Package app
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          . .\.venv\Scripts\Activate.ps1
+          python -m PyInstaller mechsocemailtool.spec
+
+      - name: Rename binary for release
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          cd dist
+          if [ -f mechsocemailtool.exe ]; then
+            mv mechsocemailtool.exe mechsocemailtool-windows.exe
+          fi
+
+      - name: Upload artifact
+        if: steps.check.outputs.exists == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mechsocemailtool-windows
+          path: dist
+
+      - name: Upload to GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          tag_name: v${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
